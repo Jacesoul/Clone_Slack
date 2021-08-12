@@ -1,0 +1,30 @@
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { UsersModule } from './users/users.module';
+import { WorkspacesModule } from './workspaces/workspaces.module';
+import { ChannelsModule } from './channels/channels.module';
+import { DmsModule } from './dms/dms.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    UsersModule,
+    WorkspacesModule,
+    ChannelsModule,
+    DmsModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+  // 이 모듈에서 쓰고 있는건데 이걸 다른 모듈에서도 쓰게하고 싶다면 exports안에 넣어서 사용이 가능하다.
+  exports: [],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    // morgan보다는 기능이 적지만 nest에서도 미들웨어 Logger로 사용할수 있다는것을 보여주었다.
+    // 미들웨어들은 consumer에 연결한다.
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

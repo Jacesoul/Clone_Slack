@@ -7,14 +7,29 @@ import { UsersModule } from './users/users.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { ChannelsModule } from './channels/channels.module';
 import { DmsModule } from './dms/dms.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { autoLoadEntities } from 'ormconfig';
+import { ChannelChats } from './entities/ChannelChats';
+import { ChannelMembers } from './entities/ChannelMembers';
+import { Channels } from './entities/Channels';
+import { DMs } from './entities/DMs';
+import { Mentions } from './entities/Mentions';
+import { Users } from './entities/Users';
+import { WorkspaceMembers } from './entities/WorkspaceMembers';
+import { Workspaces } from './entities/Workspaces';
+import * as ormconfig from '../ormconfig';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      //모든 모듈에서 process.env사용가능
+      isGlobal: true,
+    }),
     UsersModule,
     WorkspacesModule,
     ChannelsModule,
     DmsModule,
+    TypeOrmModule.forRoot(ormconfig),
   ],
   controllers: [AppController],
   providers: [AppService],

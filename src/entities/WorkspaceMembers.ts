@@ -41,4 +41,6 @@ export class WorkspaceMembers {
   })
   @JoinColumn([{ name: 'UserId', referencedColumnName: 'id' }])
   User: Users;
+  id: number;
+  Channels: any;
 }

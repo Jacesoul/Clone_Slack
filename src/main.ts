@@ -12,7 +12,11 @@ declare const module: any;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3000;
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true, // 이렇게 설정하면 @Param('id', ParseIntPipe) id: number 여기에서 처럼 ParseIntPipe사용하지 않아도 자동으로 number로 바꿔준다.
+    }),
+  );
   // 앞으로 모든 controller에서 발생하는 httpException을 여기서 걸러줄수 있다.
   app.useGlobalFilters(new HttpExceptionFilter());
 

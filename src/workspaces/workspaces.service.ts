@@ -72,4 +72,55 @@ export class WorkspacesService {
       .getMany(); // getCount()는 갯수를 가져온다. getOneOrFail()은 가져오지 않으면 에러를 표시해준다.
     // getRawMany()는 SQL이 주는 방식대로 결과값이 나온다. (문자열로 결과값을 줌)
   }
+
+  async createWorkspaceMembers(url, email) {
+    const workspace = await this.workspaceMembersRepository.findOne({
+      where: { url },
+      join: {
+        alias: 'worksapce',
+        innerJoinAndSelect: {
+          channels: 'workspace.Channels',
+        },
+      },
+      // join은 relations로 간단히 대체할수있다.
+      // relations: ['Channels'],
+    });
+    // QueryBuilder로 구현한다면 아래쪽과 같이 하면 된다.
+    // this.workspaceMembersRepository
+    //   .createQueryBuilder('workspace')
+    //   .innerJoinAndSelect('workspace.Channels', 'channels')
+    //   .getOne();
+
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      return null;
+    }
+    const workspaceMember = new WorkspaceMembers();
+    workspaceMember.WorkspaceId = workspace.id;
+    workspaceMember.UserId = user.id;
+    await this.workspaceMembersRepository.save(workspaceMember);
+    const channelMember = new ChannelMembers();
+    channelMember.ChannelId = workspace.Channels.find(
+      (v) => v.name === '일반',
+    ).id;
+    channelMember.UserId = user.id;
+    await this.channelMembersRepository.save(channelMember);
+  }
+
+  async getWorkspaceMember(url: string, id: number) {
+    return (
+      this.usersRepository
+        .createQueryBuilder('user')
+        // where절에 여러가지 넣고 싶을때는 이렇게 한다.
+        // .where('user.id=:id AND user.name=:name', { id, name })
+        .where('user.id=:id', { id })
+        // 아래처럼 andWhere과 orWhere도 사용이 가능하다.
+        // .andWhere('user.name=:name', { name })
+        // 만약 workspaces의 정보까지 같이 가져오고 싶다면 innerJoinAndSelect를 사용하면된다.
+        .innerJoin('user.Workspaces', 'workspaces', 'workspaces.url =: url', {
+          url,
+        })
+        .getOne()
+    );
+  }
 }

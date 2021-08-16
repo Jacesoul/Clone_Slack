@@ -1,4 +1,12 @@
-import { Controller, Param, Get, Query, Body, Post } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Get,
+  Query,
+  Body,
+  Post,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { query } from 'express';
 import { get } from 'http';
 import { ApiTags } from '@nestjs/swagger';
@@ -13,7 +21,7 @@ export class ChannelsController {
   createChannel() {}
 
   @Get(':name')
-  getSpecificChannel() {}
+  getSpecificChannel(@Param('name') name: string) {}
 
   @Get(':name/chats')
   getChat(@Query() query, @Param() param) {

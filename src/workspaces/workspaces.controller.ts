@@ -1,14 +1,37 @@
-import { Controller, Get, Post, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  ParseIntPipe,
+  ParseArrayPipe,
+  Body,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { WorkspacesService } from './workspaces.service';
+import { User } from 'src/common/decorators/user.decorator';
+import { Users } from 'src/entities/Users';
+import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 
 @ApiTags('WORKSPACE')
 @Controller('api/workspaces')
 export class WorkspacesController {
+  constructor(private workspacesService: WorkspacesService) {}
   @Get()
-  getMyWorkspaces() {}
+  // 데코레이터에서 만들었던 것을 가지고와서 사용. request를 사용할 필요가 없다.
+  getMyWorkspaces(@User() user: Users) {
+    return this.workspacesService.findMyWorkspaces(user.id);
+  }
 
   @Post()
-  createWorkspace() {}
+  createWorkspace(@User() user: Users, @Body() body: CreateWorkspaceDto) {
+    return this.workspacesService.createWorkspace(
+      body.workspace,
+      body.url,
+      user.id,
+    );
+  }
 
   @Get(':url/members')
   getAllMembersFromWorkspace() {}

@@ -6,6 +6,8 @@ import {
   Res,
   Body,
   UseInterceptors,
+  HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { JoinRequestDto } from './dto/join.request.dto';
 import { UsersService } from './users.service';
@@ -13,6 +15,9 @@ import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/common/dto/user.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { UndefinedToNullInterceptor } from 'src/common/interceptors/undefinedToNull.interceptor';
+import { LocalAuthGuard } from 'src/auth/local-auth.guard';
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
+import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('USER')
@@ -32,17 +37,18 @@ export class UsersController {
   @ApiOperation({ summary: '내 정보 조회' })
   @Get()
   getUsers(@User() user) {
-    return user;
+    return user || false;
   }
   //리턴을 보냈을때 {data : user, code : 'SUCCESS'} 이렇게 알아서 해줬으면 좋겠다라고 생각한다면 interceptor를 사용하자
   // return user;로 끝나게 되면 nest가 알아서 res.json(user)로 보내준다. 여기서 인터셉터가 그 중간에서 데이터를 가공해줄수 있다.
   // return user; -> 인터셉터 데이터 가공 {data : user, code : 'SUCCESS'} -> 마지막 nest가 res.json({data : user, code : 'SUCCESS'}) 리턴
   // 중간에 에러가 난 경우에는 exception filter를 통해 에러를 한번더 변형할 수 있는 기회를 준다.
 
+  @UseGuards(new NotLoggedInGuard())
   @ApiOperation({ summary: '회원가입' })
   @Post()
-  join(@Body() body: JoinRequestDto) {
-    this.usersService.join(body.email, body.nickname, body.password);
+  async join(@Body() body: JoinRequestDto) {
+    await this.usersService.join(body.email, body.nickname, body.password);
   }
 
   @ApiResponse({
@@ -51,11 +57,13 @@ export class UsersController {
     type: UserDto,
   })
   @ApiOperation({ summary: '로그인' })
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   logIn(@User() user) {
     return user;
   }
 
+  @UseGuards(new LoggedInGuard())
   @ApiOperation({ summary: '로그아웃' })
   @Post('logout')
   //왠만하면 res와 req를 안쓰는게 좋지만 logout같은 경우에는 어쩔수가 없다.

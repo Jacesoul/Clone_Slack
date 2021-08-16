@@ -30,6 +30,7 @@ import * as ormconfig from '../ormconfig';
     ChannelsModule,
     DmsModule,
     TypeOrmModule.forRoot(ormconfig),
+    TypeOrmModule.forFeature([Users]),
   ],
   controllers: [AppController],
   providers: [AppService],

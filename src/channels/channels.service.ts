@@ -112,12 +112,9 @@ export class ChannelsService {
     // 여기서 'name'과 'url'은 많이 사용되기 때문에 index걸어주기
     return this.channelChatsRepository
       .createQueryBuilder('channelChats')
-      .innerJoinAndSelect(
-        'channelChats.Channel',
-        'channel',
-        'channel.name=:name',
-        { name },
-      )
+      .innerJoin('channelChats.Channel', 'channel', 'channel.name=:name', {
+        name,
+      })
       .innerJoin('channel.Workspace', 'workspace', 'workspace.url=:url', {
         url,
       })
@@ -140,8 +137,31 @@ export class ChannelsService {
       // sql의 COUNT(*)와 동일하다.
       where: {
         ChannelId: channel.id,
-        createdAt: MoreThan(new Date(after)), // MoreThan 연산자 -> createdAt> "2021-08-16"
+        createdAt: MoreThan(new Date(after)), // MoreThan 연산자 -> createdAt > "2021-08-16"
       },
     });
+  }
+  // 매개변수가 많아지면 순서가 헷갈리는데 이럴때는 {}로 객체처리 해주는것이 좋다.
+  async postChat({ url, name, content, myId }) {
+    const channel = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoin('channel.Workspace', 'workspace', 'workspace.url =:url', {
+        url,
+      })
+      .where('channel.name = :name', { name })
+      .getOne();
+    if (!channel) {
+      throw new NotFoundException('채널이 존재하지 않습니다.');
+    }
+    const chats = new ChannelChats();
+    chats.content = content;
+    chats.UserId = myId;
+    chats.ChannelId = channel.id;
+    const savedChat = await this.channelChatsRepository.save(chats);
+    const chatWithUser = await this.channelChatsRepository.findOne({
+      where: { id: savedChat.id },
+      relations: ['User', 'Channel'],
+    });
+    // socket.io로 워크스페이스+채널 사용자한테 전송
   }
 }

@@ -6,6 +6,7 @@ import { Repository, MoreThan } from 'typeorm';
 import { Workspaces } from 'src/entities/Workspaces';
 import { ChannelChats } from 'src/entities/ChannelChats';
 import { Users } from 'src/entities/Users';
+import { EventsGateway } from 'src/events/events.gateway';
 
 @Injectable()
 export class ChannelsService {
@@ -20,6 +21,7 @@ export class ChannelsService {
     private channelChatsRepository: Repository<ChannelChats>,
     @InjectRepository(Users)
     private usersRepository: Repository<Users>,
+    private eventsGateway: EventsGateway,
   ) {}
 
   async findById(id: number) {
@@ -163,5 +165,45 @@ export class ChannelsService {
       relations: ['User', 'Channel'],
     });
     // socket.io로 워크스페이스+채널 사용자한테 전송
+    // ws-워크스페이스-채널아이디 형식 socket.io에서는 room에 대응됩니다. 그 채널에 메시지를 보내는 거예요.
+    this.eventsGateway.server
+      .to(`/ws-${url}-${channel.id}`)
+      .emit('message', chatWithUser);
+  }
+
+  async createWorkspaceChannelImages(
+    url: string,
+    name: string,
+    files: Express.Multer.File[],
+    myId: number,
+  ) {
+    console.log(files);
+    const channel = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoinAndSelect(
+        'channel.Workspace',
+        'workspace',
+        'workspace.url = :url',
+        { url },
+      )
+      .where('channel.name=:name', { name })
+      .getOne();
+    if (!channel) {
+      throw new NotFoundException('채널이 존재하지 않습니다.');
+    }
+    for (let i = 0; i < files.length; i++) {
+      const chats = new ChannelChats();
+      chats.content = files[i].path;
+      chats.UserId = myId;
+      chats.ChannelId = channel.id;
+      const savedChat = await this.channelChatsRepository.save(chats);
+      const chatWithUser = await this.channelChatsRepository.findOne({
+        where: { id: savedChat.id },
+        relations: ['User', 'Channel'],
+      });
+      this.eventsGateway.server
+        .to(`/ws-${url}-${chatWithUser.ChannelId}`)
+        .emit('message', chatWithUser);
+    }
   }
 }

@@ -19,6 +19,8 @@ import { WorkspaceMembers } from './entities/WorkspaceMembers';
 import { Workspaces } from './entities/Workspaces';
 import * as ormconfig from '../ormconfig';
 import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './events/events.module';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { AuthModule } from './auth/auth.module';
     DmsModule,
     TypeOrmModule.forRoot(ormconfig),
     TypeOrmModule.forFeature([Users]),
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

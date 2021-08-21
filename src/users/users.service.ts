@@ -24,7 +24,13 @@ export class UsersService {
     private channelMembersRepository: Repository<ChannelMembers>,
     private connection: Connection,
   ) {}
-  getUser() {}
+
+  async findByEmail(email: string) {
+    return this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'password'],
+    });
+  }
 
   async join(email: string, nickname: string, password: string) {
     const queryRunner = this.connection.createQueryRunner();

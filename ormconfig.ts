@@ -14,9 +14,12 @@ const config: TypeOrmModuleOptions = {
   type: 'mysql',
   host: 'localhost',
   port: 3306,
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+  username:
+    process.env.NODE_ENV === 'test' ? 'testuser' : process.env.DB_USERNAME,
+  password:
+    process.env.NODE_ENV === 'test' ? 'testpass' : process.env.DB_PASSWORD,
+  database:
+    process.env.NODE_ENV === 'test' ? 'testdb' : process.env.DB_DATABASE,
   entities: [
     ChannelChats,
     ChannelMembers,

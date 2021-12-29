@@ -14,7 +14,9 @@ import { onlineMap } from './onlineMap';
 // onlineMap을 여기에 선언을 해도 되지만 nest에서는 기본적으로 하나의 파일에 하나의 export가 있는게 좋기 때문에 구조적으로 만들기 위해서 분리를 한다.
 // export const onlineMap = {};
 
-@WebSocketGateway({ namespace: /\/ws-.+/ }) // 사용자들이 어떤 워크스페이스를 만들지 모르기 때문에 정규표현식으로 사용자들이 만드는 워크스페이스 그 족족 모든걸 처리하기위해 정규표현식으로 한다. 워크스페이스 이름은 socket.nsp.name으로 접근 가능하다.
+@WebSocketGateway({ namespace: /\/ws-.+/ })
+// 사용자들이 어떤 워크스페이스를 만들지 모르기 때문에 정규표현식으로 사용자들이 만드는 워크스페이스 그 족족 모든걸 처리하기위해 정규표현식으로 한다. 워크스페이스 이름은 socket.nsp.name으로 접근 가능하다.
+// implements를 붙여주면 OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect를 필수로 구현해야한다.
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {

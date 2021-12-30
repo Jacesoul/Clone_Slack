@@ -1,3 +1,4 @@
+import { EventsModule } from './../events/events.module';
 import { Module } from '@nestjs/common';
 import { ChannelsController } from './channels.controller';
 import { ChannelsService } from './channels.service';
@@ -7,7 +8,6 @@ import { ChannelChats } from 'src/entities/ChannelChats';
 import { Channels } from 'src/entities/Channels';
 import { Users } from 'src/entities/Users';
 import { Workspaces } from 'src/entities/Workspaces';
-import { EventsGateway } from 'src/events/events.gateway';
 
 @Module({
   imports: [
@@ -18,8 +18,9 @@ import { EventsGateway } from 'src/events/events.gateway';
       Users,
       Workspaces,
     ]),
+    EventsModule,
   ],
   controllers: [ChannelsController],
-  providers: [ChannelsService, EventsGateway],
+  providers: [ChannelsService],
 })
 export class ChannelsModule {}

@@ -5,3 +5,9 @@
 - 슬랙에서는 namespace를 workspace로 변경하고 room을 channel/dm단위로 나뉘어준다.
 - 워크스페이스 이름은 socket.nsp.name으로 접근이 가능하다.
 - 사용자들이 어떤 워크스페이스로 만들지 모르기때문에 정규표현식으로 사용자들이 만드는 워크스페이스 모든것을 처리하기위해서 정규표현식으로 표현했다. 
+- socket.io와 emit은 동일하지만 on은 다르다. 
+- connect와 disconnect의 경우는 이미 존재하는 이벤트이기 때문에 @SubscribeMessage 데코레이터를 사용할필요가 없다.
+- 커스텀으로 만드는 이벤트는 @SubscribeMessage 데코레이터를 사용해야한다.  
+- 데이터는 @MessageBody()로 의존성주입이 된다.
+- dm모듈이나 channel모듈에 EventsModule을 넣지않고 EventGateway를 provider에 넣게 되면 EventsGateway 클래스를 new로 가져와야한다. new를 할때마다 새로운 인스턴스가 생성이 되는데 그 말은 여러개의 서버가 생기게 된다. 꼭 EventsModule을 넣기!!
+
